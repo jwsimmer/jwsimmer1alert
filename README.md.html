@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}</style><style>:root{color-scheme:light dark;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}}:root[data-theme="dark"]{color-scheme:dark;--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}:root[data-theme="light"]{color-scheme:light}@media print{:root,:root[data-theme="dark"]{color-scheme:light;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}}body{background:var(--md-bg);color:var(--md-text);max-width:720px;margin:0 auto;padding:32px;display:flex;flex-direction:column;gap:10px;font:14px/1.55 -apple-system,BlinkMacSystemFont,'SF Pro','Segoe UI',sans-serif;overflow-wrap:break-word}body>:first-child{margin-top:0}h1,h2,h3,h4,h5,h6{margin:6px 0 0;line-height:1.25;font-weight:600;text-wrap:balance}h1{font-size:1.35em}h2{font-size:1.15em;color:var(--md-muted)}h3,h4,h5,h6{font-size:1em}p,ul,ol,blockquote,table,pre,hr{margin:0}strong{font-weight:600}a{color:var(--md-link);text-decoration:none}a:hover{text-decoration:underline}ul,ol{display:flex;flex-direction:column;gap:6px;padding-left:22px}ul{list-style:disc}ol{list-style:decimal}:is(li,td,th)>*+:is(p,ul,ol,blockquote){margin-top:6px}blockquote{display:flex;flex-direction:column;gap:10px;border-left:2px solid var(--md-rule);padding-left:10px;color:var(--md-muted)}:not(pre)>code{background:var(--md-fill);padding:1px 3px;border-radius:4px;font:.92em 'SF Mono',ui-monospace,Menlo,Consolas,monospace}a>code{background:none;color:inherit}pre{background:var(--md-fill);padding:10px 12px;border-radius:6px;overflow-x:auto;font:12px/1.5 'SF Mono',ui-monospace,Menlo,Consolas,monospace;margin-block:4px}pre code{background:none;padding:0;font:inherit}table{width:100%;border-collapse:separate;border-spacing:2px;font:inherit}th,td{padding:6px 8px;border-radius:3px;text-align:left;vertical-align:top}th{background:var(--md-fill-strong);font-weight:600}td{background:var(--md-fill)}:is(th,td) :not(pre)>code{background:transparent}hr{border:0;border-top:1px solid var(--md-rule-strong);margin-block:10px}img{max-width:100%;height:auto;border-radius:4px}</style>
+</head><body>
+<h1>Early Warning Pipeline: Setup</h1>
+<h2>1. Phone (2 min)</h2>
+<ol>
+<li>Install the <strong>ntfy</strong> app (iOS/Android).</li>
+<li>Subscribe to a long, random topic name, e.g. <code>ew-k29xq7v3m1pz</code>. Anyone who knows it can read your alerts, so treat it like a password.</li>
+<li>In your phone settings, allow ntfy to bypass Do Not Disturb for urgent (priority 5) alerts.</li>
+</ol>
+<h2>2. Test locally (dry run, no topic set)</h2>
+<pre><code>python3 alert_pipeline.py
+</code></pre>
+<p>It prints what it would send. Then with your topic:
+NTFY_TOPIC=ew-yourtopic <a href="mailto:CONTACT=you@email.com">CONTACT=you@email.com</a> python3 alert_pipeline.py
+The first run only sets a baseline and sends a &quot;system online&quot; message.</p>
+<h2>3. Run it automatically (free)</h2>
+<p><strong>Option A: GitHub Actions</strong></p>
+<ol>
+<li>Create a <strong>public</strong> repo (public repos get unlimited free minutes; private ones would exceed the free tier at a 10-minute schedule) and upload these files.</li>
+<li>Settings &gt; Secrets and variables &gt; Actions: add <code>NTFY_TOPIC</code> and <code>CONTACT</code>.</li>
+<li>Actions tab &gt; early-warning &gt; Run workflow. Schedules can lag several minutes.</li>
+</ol>
+<p><strong>Option B: Any always-on machine or Raspberry Pi</strong>
+*/10 * * * * cd /path/to/early-warning &amp;&amp; NTFY_TOPIC=ew-yourtopic <a href="mailto:CONTACT=you@email.com">CONTACT=you@email.com</a> python3 alert_pipeline.py</p>
+<h2>4. Tuning (top of alert_pipeline.py)</h2>
+<ul>
+<li><code>HOME_STATES</code> env var: NWS states covered</li>
+<li><code>CENTRAL_AL_COUNTIES</code>: counties treated as &quot;home turf&quot; for Alabama — check against your
+county and add/remove as needed; this list drives the priority bump below</li>
+<li><code>GLOBAL_QUAKE_MIN</code> / <code>LOCAL_QUAKE_MIN</code>: earthquake thresholds</li>
+<li><code>CONFLICT_RE</code>: headline keywords for conflict escalation</li>
+<li><code>NEWS_FEEDS</code>: add or remove RSS sources</li>
+</ul>
+<h2>Priority map</h2>
+<p>5 = Extreme weather anywhere, or any Severe/Extreme NWS warning for a Central Alabama county
+(tornado, severe thunderstorm/hail, flash flood, high wind, winter storm, etc.),
+Red disasters, local quakes (all breaks Do Not Disturb)
+4 = Severe weather elsewhere in your home states, Orange disasters, hurricane advisories,
+Level 4 travel advisories, high-risk food recalls (Class I/E. coli/Listeria/botulism),
+CDC Health Alert Network notices
+3 = Moderate-severity NWS advisories for Central Alabama (heat, cold, wind, flood advisories
+that NWS doesn't rate &quot;Severe&quot;), conflict headlines, routine food/product recalls (quiet)</p>
+<h2>Sources (9 total)</h2>
+<p>NWS (weather) · USGS (earthquakes) · GDACS (global disasters) · NHC (hurricanes) ·
+State Dept (travel advisories) · BBC/Al Jazeera (conflict headlines) ·
+FDA (food recalls) · USDA FSIS (meat/poultry recalls) · CPSC (consumer product recalls) ·
+CDC Health Alert Network (disease outbreaks, public health emergencies)</p>
+
+</body></html>
